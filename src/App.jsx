@@ -9,10 +9,11 @@ import Tos from './pages/Tos';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext.jsx';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -22,9 +23,18 @@ function App() {
             <Route path="admin" element={<Admin />} />
             <Route path="tos" element={<Tos />} />
             <Route path="privacypolicy" element={<PrivacyPolicy />} />
+            <Route
+              path="admin/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>
+    </AuthProvider>
   );
 }
 

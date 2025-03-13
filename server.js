@@ -60,3 +60,106 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: 'Error during login', details: error.message });
   }
 });
+
+// Save contact form data
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Insert contact data into the database
+    const [result] = await pool.execute(
+      'INSERT INTO contact_form (name, email, message) VALUES (?, ?, ?)',
+      [name, email, message]
+    );
+
+    res.status(201).json({ message: 'Message sent successfully', contactId: result.insertId });
+  } catch (error) {
+    console.error('Error saving contact form data:', error);
+    res.status(500).json({ error: 'Error saving contact form data', details: error.message });
+  }
+});
+
+
+// Update car by ID
+app.put('/api/cars/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      car_name, car_model, car_year, location, address, price, type, sold, image
+    } = req.body;
+
+    if (!car_name || !car_model || !car_year || !location || !address || !price || !type || sold === undefined || !image) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const [result] = await pool.execute(
+      'UPDATE cars SET car_name = ?, car_model = ?, car_year = ?, location = ?, address = ?, price = ?, type = ?, sold = ?, image = ? WHERE id = ?',
+      [car_name, car_model, car_year, location, address, price, type, sold, image, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: `Car with ID ${id} not found` });
+    }
+
+    res.json({ message: 'Car updated successfully' });
+  } catch (error) {
+    console.error('Error updating car:', error);
+    res.status(500).json({ error: 'Error updating car', details: error.message });
+  }
+});
+
+// Delete car by ID
+app.delete('/api/cars/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [result] = await pool.execute('DELETE FROM cars WHERE id = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: `Car with ID ${id} not found` });
+    }
+
+    res.json({ message: 'Car deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting car:', error);
+    res.status(500).json({ error: 'Error deleting car', details: error.message });
+  }
+});
+
+// Add new car at /addcar endpoint
+app.post('/api/addcar', async (req, res) => {
+  try {
+    const {
+      car_name, car_model, car_year, location, address, price, type, sold, image
+    } = req.body;
+
+    if (!car_name || !car_model || !car_year || !location || !address || !price || !type || sold === undefined || !image) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const [result] = await pool.execute(
+      'INSERT INTO cars (car_name, car_model, car_year, location, address, price, type, sold, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [car_name, car_model, car_year, location, address, price, type, sold, image]
+    );
+
+    console.log('Car added successfully:', result); // Log the successful addition for debugging
+    res.status(201).json({ message: 'Car added successfully', carId: result.insertId });
+  } catch (error) {
+    console.error('Error adding car:', error);
+    res.status(500).json({ error: 'Error adding car', details: error.message });
+  }
+});
+
+// Start Vite dev server
+const vite = await createServer({
+  server: { middlewareMode: true }
+});
+app.use(vite.middlewares);
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});

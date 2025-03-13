@@ -8,11 +8,34 @@ export default function Contact() {
     message: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log('Form submitted:', data);
+        alert('Your message has been sent!');
+        setFormData({ name: '', email: '', message: '' }); // Reset form
+      } else {
+        console.error('Error submitting form:', data);
+        alert('Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error submitting form. Please try again.');
+    }
   };
-
+  
   return (
     <div className="max-w-4xl mx-auto px-4">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Contact Us</h1>
